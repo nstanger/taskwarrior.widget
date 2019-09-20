@@ -110,7 +110,7 @@ export const render = ({ output, error }) => {
     taskList = taskList.slice(0, maxEntries).map(processTask);
 
     return (
-        <div>
+        <div id="taskwarrior-widget-container">
             <link rel="stylesheet" type="text/css" href="taskwarrior.widget/style.css" />
             <table>
                 <thead>
