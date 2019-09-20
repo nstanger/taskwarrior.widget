@@ -1,0 +1,35 @@
+table {
+    border-collapse: collapse;
+}
+
+tr.header {
+    font-size: 8pt;
+    font-weight: bold;
+}
+
+th, td {
+    padding-bottom: 4px;
+    padding-left: 0px;
+    padding-right: 12px;
+    padding-top: 4px;
+    text-align: left;
+}
+
+th:last-of-type, td:last-of-type {
+    padding-right: 8px;
+}
+
+th.num, td.num {
+    text-align: right;
+}
+
+.star {
+    font-size: 8pt;
+    padding-left: 4px;
+    padding-right: 1px;
+    text-align: center;
+}
+
+tbody tr:nth-child(odd) {
+    background-color: rgba(255, 255, 255, 0.1);
+}
