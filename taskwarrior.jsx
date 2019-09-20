@@ -1,4 +1,6 @@
-// Inspired by task.coffee
+// Originally inspired by Taskwarrior Widget by Kevin Bockelandt:
+// https://github.com/KevinBockelandt/TaskwarriorWidget
+// Rewritten from scratch using the new React + JSX framework.
 
 export const command = "/opt/local/bin/task +READY export";
 
