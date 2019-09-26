@@ -2,6 +2,8 @@
 // https://github.com/KevinBockelandt/TaskwarriorWidget
 // Rewritten from scratch using the new React + JSX framework.
 
+'use strict';
+
 export const command = "/opt/local/bin/task +READY export";
 
 export const refreshFrequency = 10000;
@@ -25,34 +27,34 @@ const maxEntries = 20;
 const startedIndicator = "🟊";
 
 // Colours
-const headerColour = { r: 255, g: 255, b: 255, a: 1 };
+const headerColour = Object.freeze({ r: 255, g: 255, b: 255, a: 1 });
 // The opacity is determined dynamically for all the following
-const overDueColour = { r: 255, g: 200, b: 0 };
-const dueColour = { r: 255, g: 100, b: 100 };
-const normalColour = { r: 255, g: 255, b: 255 };
-const tagsColour = { r: 50, g: 225, b: 50 };
+const overDueColour = Object.freeze({ r: 255, g: 200, b: 0 });
+const dueColour = Object.freeze({ r: 255, g: 100, b: 100 });
+const normalColour = Object.freeze({ r: 255, g: 255, b: 255 });
+const tagsColour = Object.freeze({ r: 50, g: 225, b: 50 });
 
 // Tasks fade out towards the bottom of the table in steps of 1 / maxEntries
-const opacities = (function () {
-    var values = [];
-    for (var i = 0; i < maxEntries; i++) {
+const opacities = Object.freeze((() => {
+    let values = [];
+    for (let i = 0; i < maxEntries; i++) {
         values.push(((i / maxEntries * -1) + 1).toFixed(2));
     }
     return values;
-})();
+})());
 
 // Reformat and compute task values ready for output
-const processTask = (function (task, index) {
-    var dueDateOffset = 10000; // ridiculously high number to indicate there is no due date
+const processTask = (task, index) => {
+    let dueDateOffset = 10000; // ridiculously high number to indicate there is no due date
 
     // Compute number of days to due date
-    if (task.due != undefined) {
+    if (task.due) {
         // Taskwarrior date strings aren't quite in ISO 8601 format
         // e.g.: 20191007T110000Z, which should be 2019-10-07T11:00:00Z
-        var dateParts = [task.due.slice(0, 4), task.due.slice(4, 6), task.due.slice(6, 8)].join("-");
-        var timeParts = [task.due.slice(8, 11), task.due.slice(11, 13), task.due.slice(13)].join(":");
-        var dueDate = new Date(dateParts + timeParts);
-        var today = new Date();
+        let dateParts = [task.due.slice(0, 4), task.due.slice(4, 6), task.due.slice(6, 8)].join("-");
+        let timeParts = [task.due.slice(8, 11), task.due.slice(11, 13), task.due.slice(13)].join(":");
+        let dueDate = new Date(dateParts + timeParts);
+        let today = new Date();
         today.setHours(0);
         today.setMinutes(0);
         // Get the offset in days between the due date and today            
@@ -62,12 +64,12 @@ const processTask = (function (task, index) {
     }
 
     // If the task has tags, merge them into a single string
-    if (task.tags != undefined) {
+    if (task.tags) {
         task.tags = task.tags.map((tag) => { return "+" + tag; }).join(" ");
     }
 
     // Mark started tasks
-    if (task.start != undefined) {
+    if (task.start) {
         task.start = startedIndicator;
     }
 
@@ -86,24 +88,24 @@ const processTask = (function (task, index) {
     task.urgency = parseFloat(task.urgency).toFixed(2);
 
     return task;
-});
+};
 
-const rgbaColour = (function (colour, a) {
-    if (colour.a != undefined) {
+const rgbaString = (colour, a) => {
+    if (colour.a) {
         return "rgba(" + colour.r + ", " + colour.g + ", " + colour.b + ", " + colour.a + ")";
     }
     else {
         return "rgba(" + colour.r + ", " + colour.g + ", " + colour.b + ", " + a + ")";
     }
-});
+};
 
 export const render = ({ output, error }) => {
     // Get the JSON object containing all the tasks
-    var taskList = JSON.parse(output);
+    let taskList = JSON.parse(output);
     // Sort the tasks by urgency
-    taskList.sort(function (a, b) {
-        var aUrgency = (a.urgency != undefined) ? a.urgency : 0; // tasks without urgency (should be none)
-        var bUrgency = (b.urgency != undefined) ? b.urgency : 0; // will be put at the end of the list
+    taskList.sort((a, b) => {
+        let aUrgency = a.urgency ? a.urgency : 0; // tasks without urgency (should be none)
+        let bUrgency = b.urgency ? b.urgency : 0; // will be put at the end of the list
         return bUrgency - aUrgency;
     });
     // Only process and display the first maxEntries tasks
@@ -114,26 +116,26 @@ export const render = ({ output, error }) => {
             <link rel="stylesheet" type="text/css" href="taskwarrior.widget/style.css" />
             <table>
                 <thead>
-                    <tr className="header" style={{ color: rgbaColour(headerColour) }}>
+                    <tr className="header" style={{ color: rgbaString(headerColour) }}>
                         <th className="star">{startedIndicator}</th>
                         <th className="num">ID</th>
                         <th className="num">DUE</th>
                         <th>DESCRIPTION</th>
                         <th>PROJECT</th>
-                        <th style={{ color: rgbaColour(tagsColour, 1) }}>TAGS</th>
+                        <th style={{ color: rgbaString(tagsColour, 1) }}>TAGS</th>
                         <th className="num">URG</th>
                     </tr>
                 </thead>
                 <tbody>
                     {taskList.map((task, index) => {
                         return (
-                            <tr style={{ color: rgbaColour(task.colour) }} key={index}>
+                            <tr style={{ color: rgbaString(task.colour) }} key={index}>
                                 <td className="star">{task.start}</td>
                                 <td className="num">{task.id}</td>
                                 <td className="num">{task.due}</td>
                                 <td>{task.description}</td>
                                 <td>{task.project}</td>
-                                <td style={{ color: rgbaColour(tagsColour, task.colour.a) }}>{task.tags}</td>
+                                <td style={{ color: rgbaString(tagsColour, task.colour.a) }}>{task.tags}</td>
                                 <td className="num">{task.urgency}</td>
                             </tr>
                         );
@@ -142,4 +144,4 @@ export const render = ({ output, error }) => {
             </table>
         </div>
     )
-}
+};
