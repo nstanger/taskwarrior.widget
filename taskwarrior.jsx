@@ -29,8 +29,8 @@ const startedIndicator = "🟊";
 // Colours
 const headerColour = Object.freeze({ r: 255, g: 255, b: 255, a: 1 });
 // The opacity is determined dynamically for all the following
-const overDueColour = Object.freeze({ r: 255, g: 200, b: 0 });
-const dueColour = Object.freeze({ r: 255, g: 100, b: 100 });
+const overDueColour = Object.freeze({ r: 255, g: 100, b: 100 });
+const dueColour = Object.freeze({ r: 255, g: 200, b: 0 });
 const normalColour = Object.freeze({ r: 255, g: 255, b: 255 });
 const tagsColour = Object.freeze({ r: 50, g: 225, b: 50 });
 
