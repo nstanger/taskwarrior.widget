@@ -4,7 +4,7 @@
 
 'use strict';
 
-export const command = "/opt/local/bin/task +READY export";
+export const command = "/opt/local/bin/task +READY -PARENT export";
 
 export const refreshFrequency = 10000;
 
