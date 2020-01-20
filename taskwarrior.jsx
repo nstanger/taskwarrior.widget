@@ -100,48 +100,69 @@ const rgbaString = (colour, a) => {
 };
 
 export const render = ({ output, error }) => {
-    // Get the JSON object containing all the tasks
-    let taskList = JSON.parse(output);
-    // Sort the tasks by urgency
-    taskList.sort((a, b) => {
-        let aUrgency = a.urgency ? a.urgency : 0; // tasks without urgency (should be none)
-        let bUrgency = b.urgency ? b.urgency : 0; // will be put at the end of the list
-        return bUrgency - aUrgency;
-    });
-    // Only process and display the first maxEntries tasks
-    taskList = taskList.slice(0, maxEntries).map(processTask);
+    // What if error is already set?
+    // Will the following give an exception anyway?
+    try {
+        // Get the JSON object containing all the tasks
+        let taskList = JSON.parse(output);
+        // Sort the tasks by urgency
+        taskList.sort((a, b) => {
+            let aUrgency = a.urgency ? a.urgency : 0; // tasks without urgency (should be none)
+            let bUrgency = b.urgency ? b.urgency : 0; // will be put at the end of the list
+            return bUrgency - aUrgency;
+        });
+        // Only process and display the first maxEntries tasks
+        taskList = taskList.slice(0, maxEntries).map(processTask);
 
-    return (
-        <div id="taskwarrior-widget-container">
-            <link rel="stylesheet" type="text/css" href="taskwarrior.widget/style.css" />
-            <table>
-                <thead>
-                    <tr className="header" style={{ color: rgbaString(headerColour) }}>
-                        <th className="star">{startedIndicator}</th>
-                        <th className="num">ID</th>
-                        <th className="num">DUE</th>
-                        <th>DESCRIPTION</th>
-                        <th>PROJECT</th>
-                        <th style={{ color: rgbaString(tagsColour, 1) }}>TAGS</th>
-                        <th className="num">URG</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {taskList.map((task, index) => {
-                        return (
-                            <tr style={{ color: rgbaString(task.colour) }} key={index}>
-                                <td className="star">{task.start}</td>
-                                <td className="num">{task.id}</td>
-                                <td className="num">{task.due}</td>
-                                <td>{task.description}</td>
-                                <td>{task.project}</td>
-                                <td style={{ color: rgbaString(tagsColour, task.colour.a) }}>{task.tags}</td>
-                                <td className="num">{task.urgency}</td>
-                            </tr>
-                        );
-                    })}
-                </tbody>
-            </table>
-        </div>
-    )
+        return (
+            <div id="taskwarrior-widget-container">
+                <link rel="stylesheet" type="text/css" href="taskwarrior.widget/style.css" />
+                <table>
+                    <thead>
+                        <tr className="header" style={{ color: rgbaString(headerColour) }}>
+                            <th className="star">{startedIndicator}</th>
+                            <th className="num">ID</th>
+                            <th className="num">DUE</th>
+                            <th>DESCRIPTION</th>
+                            <th>PROJECT</th>
+                            <th style={{ color: rgbaString(tagsColour, 1) }}>TAGS</th>
+                            <th className="num">URG</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {taskList.map((task, index) => {
+                            return (
+                                <tr style={{ color: rgbaString(task.colour) }} key={index}>
+                                    <td className="star">{task.start}</td>
+                                    <td className="num">{task.id}</td>
+                                    <td className="num">{task.due}</td>
+                                    <td>{task.description}</td>
+                                    <td>{task.project}</td>
+                                    <td style={{ color: rgbaString(tagsColour, task.colour.a) }}>{task.tags}</td>
+                                    <td className="num">{task.urgency}</td>
+                                </tr>
+                            );
+                        })}
+                    </tbody>
+                </table>
+            </div>
+        )
+    }
+    catch (e) {
+        console.error(e)
+        if (!output) {
+            return (
+                <div id="taskwarrior-widget-container">
+                    <p><strong>No tasks found.</strong></p>
+                </div>
+            )
+        }
+        else {
+            return (
+                <div id="taskwarrior-widget-container">
+                    <p><strong class="error">Error: {e}.</strong></p>
+                </div>
+            )
+        }
+    }
 };

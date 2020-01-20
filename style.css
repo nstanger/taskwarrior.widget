@@ -1,3 +1,10 @@
+#taskwarrior-widget-container strong.warning {
+    color: orange;
+}
+#taskwarrior-widget-container strong.error {
+    color: red;
+}
+
 #taskwarrior-widget-container table {
     border-collapse: collapse;
 }
