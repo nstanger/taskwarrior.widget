@@ -8,6 +8,9 @@ export const command = "/opt/local/bin/task +READY -PARENT export";
 
 export const refreshFrequency = 10000;
 
+// Ridiculously high number of days, used to indicate there is no due date
+export const maxDue = 100000;
+
 export const className = `
     left: 30px;
     top: 30px;
@@ -45,10 +48,9 @@ const opacities = Object.freeze((() => {
 
 // Reformat and compute task values ready for output
 const processTask = (task, index) => {
-    let dueDateOffset = 10000; // ridiculously high number to indicate there is no due date
-
     // Compute number of days to due date
     if (task.due) {
+        let dueDateOffset = maxDue;
         // Taskwarrior date strings aren't quite in ISO 8601 format
         // e.g.: 20191007T110000Z, which should be 2019-10-07T11:00:00Z
         let dateParts = [task.due.slice(0, 4), task.due.slice(4, 6), task.due.slice(6, 8)].join("-");
@@ -112,9 +114,12 @@ export const render = ({ output, error }) => {
         let taskList = JSON.parse(output).map(processTask);
         // Sort the tasks by due date ascending, then by urgency descending.
         taskList.sort((a, b) => {
+            // Adjust for no due date
+            let aDue = a.due ? a.due : maxDue;
+            let bDue = b.due ? b.due : maxDue;
             // Need urgency as a fraction. Maximum possible urgency is 60.7
             // with default settings, so let’s assume it’s less than 1000.
-            return (a.due - a.urgency/1000) - (b.due - b.urgency/1000);
+            return (aDue - a.urgency/1000) - (bDue - b.urgency/1000);
         });
         // We have to colourise after the sort.
         // Only display the first maxEntries tasks.
