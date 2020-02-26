@@ -73,11 +73,18 @@ const processTask = (task, index) => {
         task.start = startedIndicator;
     }
 
+    task.urgency = task.urgency ? parseFloat(task.urgency).toFixed(2) : 0.0;
+
+    return task;
+};
+
+// Colourise the tasks in the output list
+const colourTask = (task, index) => {
     // Colour row text according to due date
-    if (dueDateOffset < 0) {
+    if (task.due < 0) {
         task.colour = Object.assign({}, overDueColour);
     }
-    else if (dueDateOffset == 0) {
+    else if (task.due == 0) {
         task.colour = Object.assign({}, dueColour);
     }
     else {
@@ -85,10 +92,8 @@ const processTask = (task, index) => {
     }
     task.colour.a = opacities[index];
 
-    task.urgency = parseFloat(task.urgency).toFixed(2);
-
     return task;
-};
+}
 
 const rgbaString = (colour, a) => {
     if (colour.a) {
@@ -103,16 +108,17 @@ export const render = ({ output, error }) => {
     // What if error is already set?
     // Will the following give an exception anyway?
     try {
-        // Get the JSON object containing all the tasks
-        let taskList = JSON.parse(output);
-        // Sort the tasks by urgency
+        // Get the JSON object containing all the tasks and process them.
+        let taskList = JSON.parse(output).map(processTask);
+        // Sort the tasks by due date ascending, then by urgency descending.
         taskList.sort((a, b) => {
-            let aUrgency = a.urgency ? a.urgency : 0; // tasks without urgency (should be none)
-            let bUrgency = b.urgency ? b.urgency : 0; // will be put at the end of the list
-            return bUrgency - aUrgency;
+            // Need urgency as a fraction. Maximum possible urgency is 60.7
+            // with default settings, so let’s assume it’s less than 1000.
+            return (a.due - a.urgency/1000) - (b.due - b.urgency/1000);
         });
-        // Only process and display the first maxEntries tasks
-        taskList = taskList.slice(0, maxEntries).map(processTask);
+        // We have to colourise after the sort.
+        // Only display the first maxEntries tasks.
+        taskList = taskList.slice(0, maxEntries).map(colourTask);
 
         return (
             <div id="taskwarrior-widget-container">
