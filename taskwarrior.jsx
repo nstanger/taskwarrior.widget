@@ -155,7 +155,6 @@ export const render = ({ output, error }) => {
         )
     }
     catch (e) {
-        console.error(e)
         if (!output) {
             return (
                 <div id="taskwarrior-widget-container">
@@ -164,6 +163,7 @@ export const render = ({ output, error }) => {
             )
         }
         else {
+            console.error(e)
             return (
                 <div id="taskwarrior-widget-container">
                     <p><strong class="error">Error: {e}.</strong></p>
