@@ -75,6 +75,7 @@ const processTask = (task, index) => {
         task.start = startedIndicator;
     }
 
+    // don't need to check for 0 here as it'll get set to 0.0 anyway
     task.urgency = task.urgency ? parseFloat(task.urgency).toFixed(2) : 0.0;
 
     return task;
@@ -115,8 +116,9 @@ export const render = ({ output, error }) => {
         // Sort the tasks by due date ascending, then by urgency descending.
         taskList.sort((a, b) => {
             // Adjust for no due date
-            let aDue = a.due ? a.due : maxDue;
-            let bDue = b.due ? b.due : maxDue;
+            // CAUTION: 0 is "falsy" but valid, so needs to be explicitly checked for
+            let aDue = (a.due || a.due === 0) ? a.due : maxDue;
+            let bDue = (b.due || b.due === 0) ? b.due : maxDue;
             // Need urgency as a fraction. Maximum possible urgency is 60.7
             // with default settings, so let’s assume it’s less than 1000.
             return (aDue - a.urgency/1000) - (bDue - b.urgency/1000);
