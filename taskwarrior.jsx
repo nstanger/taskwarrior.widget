@@ -8,8 +8,8 @@ export const command = "/opt/local/bin/task +READY -PARENT export";
 
 export const refreshFrequency = 10000;
 
-// Ridiculously high number of days, used to indicate there is no due date
-export const maxDue = 100000;
+// Ridiculously high number of days (in ms), used to indicate there is no due date
+export const maxDue = 100000 * 60 * 60 * 24 * 1000;
 
 export const className = `
     left: 30px;
@@ -23,7 +23,11 @@ export const className = `
 `;
 
 // Configuration
-const secondsInDay = 24 * 60 * 60 * 1000;
+// Note date differences are in ms
+const millisecondsInDay = 24 * 60 * 60 * 1000;
+const millisecondsInWeek = millisecondsInDay * 7;
+const millisecondsInMonth = millisecondsInDay * 30.42; // on average
+const millisecondsInYear = millisecondsInDay * 365.25; // appproximately
 // Maximum number of entries to display
 const maxEntries = 20;
 // Indicator for tasks that are started
@@ -57,12 +61,30 @@ const processTask = (task, index) => {
         let timeParts = [task.due.slice(8, 11), task.due.slice(11, 13), task.due.slice(13)].join(":");
         let dueDate = new Date(dateParts + timeParts);
         let today = new Date();
+        // Truncate the offset between the due date and today to the nearest day
         today.setHours(0);
         today.setMinutes(0);
-        // Get the offset in days between the due date and today            
-        dueDate.setMinutes(dueDate.getMinutes() - dueDate.getTimezoneOffset());
-        dueDateOffset = Math.floor((dueDate.getTime() - today.getTime()) / secondsInDay);
-        task.due = dueDateOffset;
+        today.setSeconds(0);
+        today.setMilliseconds(0);
+        dueDate.setMinutes(0);
+        dueDate.setSeconds(0);
+        dueDate.setMilliseconds(0);
+
+        let difference = dueDate.getTime() - today.getTime();
+        if (Math.abs(difference) > millisecondsInYear) {
+            dueDateOffset = Math.floor(difference / millisecondsInYear);
+            task.units = dueDateOffset + "y";
+        } else if (Math.abs(difference) > millisecondsInMonth) {
+            dueDateOffset = Math.floor(difference / millisecondsInMonth);
+            task.units = dueDateOffset + "m";
+        } else if (Math.abs(difference) > millisecondsInWeek) {
+            dueDateOffset = Math.floor(difference / millisecondsInWeek);
+            task.units = dueDateOffset + "w";
+        } else {
+            dueDateOffset = Math.floor(difference / millisecondsInDay);
+            task.units = dueDateOffset + "d";
+        }
+        task.due = difference;
     }
 
     // If the task has tags, merge them into a single string
@@ -148,7 +170,7 @@ export const render = ({ output, error }) => {
                                 <tr style={{ color: rgbaString(task.colour) }} key={index}>
                                     <td className="star">{task.start}</td>
                                     <td className="num">{task.id}</td>
-                                    <td className="num">{task.due}</td>
+                                    <td className="num">{task.units}</td>
                                     <td>{task.description}</td>
                                     <td>{task.project}</td>
                                     <td style={{ color: rgbaString(tagsColour, task.colour.a) }}>{task.tags}</td>
