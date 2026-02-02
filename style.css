@@ -31,6 +31,7 @@
 }
 
 #taskwarrior-widget-container .star {
+    font-family: Symbola, sans-serif;
     font-size: 8pt;
     padding-left: 4px;
     padding-right: 1px;
